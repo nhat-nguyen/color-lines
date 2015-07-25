@@ -60,13 +60,16 @@
 * 		 	. return: none
 ********************************************************************************/
 
-function BallManager(game, numColors, ballSize, spriteName) {
+function BallManager(width, height, numColors, ballSize, spriteName) {
 	this.size = ballSize;
 	this.nColors = numColors;
 	this.sprite = spriteName;
+
+	this.width = width;
+	this.height = height;
 	this.board = new Board(9, 9, 0);
+
 	this.selectedBall = null;
-	this.game = game;
 
 	this.balls = {};
 	this.upcomingColors = [randInt(0, this.nColors), randInt(0, this.nColors), randInt(0, this.nColors)];
@@ -94,7 +97,7 @@ BallManager.prototype.renderPreviews = function(x, y, scale, onInputDownListener
 		var color = this.upcomingColors[i];
 		this.ballPreview[i] = game.add.sprite(x + 25 * i, y, this.sprite, color);
 		this.ballPreview[i].color = color;
-		this.ballPreview[i].scale.setTo(0.5, 0.5);
+		this.ballPreview[i].scale.setTo(scale, scale);
 	}
 };
 
@@ -398,7 +401,7 @@ BallManager.Effects.fadeOut = function(sprite, callback) {
 	fade.onComplete.add(function() {
 		if (callback !== null && callback !== undefined && typeof callback === 'function') {
 			callback();
-			console.log('hi');
+			sprite.kill();
 		}
 	});
 };

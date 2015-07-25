@@ -8,9 +8,9 @@ var game = new Phaser.Game(NUM_ROWS * BALL_HEIGHT + SIDEBAR_WIDTH, NUM_ROWS * BA
 
 var score = new ScoreBoard(0, localStorage['highscore'], 15, color='#ffffff');
 
-var manager = new BallManager(game, NUM_BALLS, BALL_HEIGHT, 'balls');
+var manager = new BallManager(NUM_ROWS, NUM_ROWS, NUM_BALLS, BALL_HEIGHT, 'balls');
 
-function preload () {   
+function preload () {
 	game.load.image('board', './res/tile.png');
 	game.load.image('sidebar', './res/sidebar.png');
 	game.load.image('shadow', './res/shadow.png');

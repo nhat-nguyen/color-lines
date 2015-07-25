@@ -1,6 +1,6 @@
 function ScoreBoard(score, highscore, fontSize, color) {
 	this.score = (score === undefined) ? 0: score;
-	this.highscore = (highscore === undefined) ? 1: highscore;
+	this.highscore = (highscore === undefined) ? 0: highscore;
 
 	this.scoreText = null;
 	this.highscoreText = null;
@@ -17,7 +17,6 @@ ScoreBoard.prototype.renderScore = function(x, y) {
 	this.scoreText = game.add.text(x, y, this.score + '');
 	this.scoreText.fontSize = this.fontSize;
 	this.scoreText.fill = this.color;
-	console.log(this.color);
 }
 
 ScoreBoard.prototype.renderHighScore = function(x, y) {
