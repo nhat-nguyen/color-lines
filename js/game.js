@@ -21,12 +21,11 @@ function preload () {
 
 function create() {
     initBoard();
-    // EasyStar.js initialization
+
     easystar = new EasyStar.js();
     easystar.setGrid(manager.board.values);
     easystar.setAcceptableTiles([0]);
 
-    // Sidebar and score management initialization
     game.add.sprite(NUM_ROWS * BALL_HEIGHT, 0, 'sidebar');
 
     score.renderScore(BALL_HEIGHT * NUM_ROWS + 80, game.world.centerY + 5);
@@ -35,17 +34,18 @@ function create() {
     restartGame = game.add.sprite(game.width - 125, game.height - 30, 'restart');
     restartGame.inputEnabled = 1;
     restartGame.events.onInputDown.add(function() {
-    	manager.reset();
-    	score.reset();
-    	randBallGroup();
+    	if (!manager.getProcessingStatus()) { // only reset the game when nothing is current processed
+    		manager.reset();
+    		score.reset();
+    		randBallGroup();
+    	};
     });
 
-    // Initial ball group
-    randBallGroup();
+    randBallGroup(); // Initial ball group
 }
 
 function ballListener(sprite, pointer) {
-	// If a ball has been selected, remove that ball's shadow
+	// If another ball has been selected, remove that ball's shadow
 	if (manager.getSelectedBall() !== null) {
 		BallManager.Effects.removeShadow(manager.getSelectedBall());
 	}
@@ -57,7 +57,7 @@ function ballListener(sprite, pointer) {
 
 function cellListener(sprite, pointer) {
 	var dest = manager.atWhichCell(sprite.x, sprite.y);
-	var current = manager.selectedBall;
+	var current = manager.getSelectedBall();
 
 	if (current !== null && !current.isMoving && !manager.board.at(dest.x, dest.y)) {
 		var ball = manager.atWhichCell(current.x, current.y);
@@ -86,7 +86,8 @@ function initBoard() {
 	}
 }
 
-// The ball has arrived at cell (x, y), do something with it
+// The ball has arrived at cell (x, y), check if there is any match
+// and update the score. Only add new balls when no score is earned
 function matchAndScore(x, y) {
 	var earnedScore = manager.removeMatch(x, y);
 	if (earnedScore > 0) {

@@ -58,6 +58,11 @@
 * 		 - reset(): 
 * 		 	. reset all the values of the manager
 * 		 	. return: none
+*-------------------------------------------------------------------------------
+*		 - getProcessingStatus():
+*			. get the status of the manager, whether there are still any 
+*			  asynchronous calls that haven't finished yet
+*			. return: boolean value of the status
 ********************************************************************************/
 
 function BallManager(width, height, numColors, ballSize, spriteName) {
@@ -74,6 +79,8 @@ function BallManager(width, height, numColors, ballSize, spriteName) {
 	this.balls = {};
 	this.upcomingColors = [randInt(0, this.nColors), randInt(0, this.nColors), randInt(0, this.nColors)];
 	this.ballPreview = [];
+
+	this.isProcessing = false; // used as a flag for asynchronous function
 }
 
 BallManager.prototype.render = function(x, y, color, onInputDownListener) {
@@ -117,10 +124,13 @@ BallManager.prototype.getSelectedBall = function() {
 };
 
 BallManager.prototype.setSelectedBall = function(ball) {
-	return this.selectedBall = ball;
+	this.selectedBall = ball;
 };
 
 BallManager.prototype.move = function(sprite, path, callback, params) {
+	sprite.isMoving = true;
+	this.setProcessingStatus(true);
+
 	// Adjust the tracking board and balls object accordingly
 	var finish = path.length - 1;
 	var original = this.getName(path[0].x, path[0].y);
@@ -131,16 +141,16 @@ BallManager.prototype.move = function(sprite, path, callback, params) {
 	this.balls[moved] = this.balls[original];
 	delete this.balls[original];
 
-	sprite.isMoving = true;
-
 	// Add a chained tween to the sprite object
 	var movingTween = game.add.tween(sprite);
 	for (var i = 0; i < path.length; i++) {
 		movingTween.to({x: path[i].x * this.size, y: path[i].y * this.size}, 50, Phaser.Easing.Linear.None);
 	}
 	movingTween.start();
+	var self = this;
 	movingTween.onComplete.add(function(){
 		sprite.isMoving = false;
+		self.setProcessingStatus(false);
 		if (callback !== null && typeof callback === 'function') {
 			callback.apply(this, params);
 		}
@@ -284,13 +294,17 @@ BallManager.prototype.antiDiagonalMatch = function(x, y, color) {
 };
 
 BallManager.prototype.removeMatch = function(x, y) {
-	var color = this.balls[this.getName(x, y)].color;
+	var ball = this.balls[this.getName(x, y)];
+	if (ball === null || ball === undefined) return;
 
+	var color = ball.color;
 	return this.horizontalMatch(x, y, color) + this.verticalMatch(x, y, color) +
 		   this.mainDiagonalMatch(x, y, color) + this.antiDiagonalMatch(x, y, color);
 };
 
 BallManager.prototype.reset = function() {
+	if (this.isProcessing) return;
+
 	for (var i = 0; i < this.ballPreview.length; i++) {
 		this.ballPreview[i].kill();
 	}
@@ -306,6 +320,10 @@ BallManager.prototype.reset = function() {
 	this.ballPreview = [];
 	this.board.reset();
 	this.newUpcomingColors();
+};
+
+BallManager.prototype.getProcessingStatus = function() {
+	return this.isProcessing;
 };
 
 BallManager.prototype.randLocation = function() {
@@ -366,6 +384,10 @@ BallManager.prototype.getColor = function(code) {
 		case 5: return "BROWN";
 		case 6: return "LIME";
 	}
+};
+
+BallManager.prototype.setProcessingStatus = function(boolean) {
+	this.isProcessing = boolean;
 };
 
 /*******************************************************************************
